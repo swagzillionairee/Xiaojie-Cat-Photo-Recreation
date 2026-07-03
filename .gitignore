@@ -1,0 +1,9 @@
+# The user drops their own target cat image here; do not commit it.
+assets/xiaojie.jpg
+assets/xiaojie.jpeg
+assets/xiaojie.png
+
+# Local tooling / scratch
+node_modules/
+.DS_Store
+*.log

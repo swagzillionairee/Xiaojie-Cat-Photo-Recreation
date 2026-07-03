@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xiaojie Palette Steal</title>
+  <meta name="description" content="Recreate a photo of Xiaojie the cat using only the colours from a photo you upload." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="site-title"><span class="prompt">&gt;</span> xiaojie <span class="accent">palette&nbsp;steal</span></h1>
+    <p class="tagline">Recreate Xiaojie using only the colours from a photo you upload. Upload a sunset, get a sunset cat.</p>
+  </header>
+
+  <main>
+    <!-- Status / error banner (missing cat image, worker errors, etc.) -->
+    <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+    <!-- Controls -->
+    <section class="controls" aria-label="Controls">
+      <div class="control">
+        <label for="palette-size">Palette size <output id="palette-size-value">2048</output></label>
+        <input type="range" id="palette-size" min="256" max="8192" step="256" value="2048" />
+      </div>
+
+      <fieldset class="control control--toggle">
+        <legend>Colour distance</legend>
+        <label><input type="radio" name="colorspace" value="lab" checked /> LAB <span class="hint">(perceptual)</span></label>
+        <label><input type="radio" name="colorspace" value="rgb" /> RGB <span class="hint">(raw)</span></label>
+      </fieldset>
+
+      <div class="control control--stretch">
+        <span class="control-title">Coming soon</span>
+        <label class="disabled" title="Stretch goal, not wired up in v1">
+          <input type="checkbox" disabled /> Distribution match
+        </label>
+        <label class="disabled" title="Stretch goal, not wired up in v1">
+          <input type="checkbox" disabled /> Dithering
+        </label>
+      </div>
+
+      <div class="control control--action">
+        <button id="download-btn" type="button" disabled>Download PNG</button>
+      </div>
+    </section>
+
+    <!-- Progress -->
+    <div id="progress" class="progress" hidden>
+      <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      <span id="progress-label" class="progress-label">Working...</span>
+    </div>
+
+    <!-- Three panels -->
+    <section class="panels">
+      <!-- Target -->
+      <article class="panel">
+        <h2 class="panel-title">Target <span class="panel-sub">Xiaojie</span></h2>
+        <div class="canvas-wrap">
+          <canvas id="target-canvas" aria-label="The target cat image"></canvas>
+        </div>
+      </article>
+
+      <!-- Source -->
+      <article class="panel">
+        <h2 class="panel-title">Source <span class="panel-sub">your photo</span></h2>
+        <div id="drop-zone" class="drop-zone canvas-wrap" role="button" tabindex="0"
+             aria-label="Upload a source image by dropping a file here or pressing Enter to browse">
+          <canvas id="source-canvas" hidden></canvas>
+          <div id="source-placeholder" class="placeholder">
+            <span class="placeholder-icon">+</span>
+            <span>Drop a photo here<br />or click to browse</span>
+            <span class="placeholder-hint">JPG, PNG, WebP, GIF</span>
+          </div>
+          <input type="file" id="file-input" accept="image/*" hidden />
+        </div>
+      </article>
+
+      <!-- Result -->
+      <article class="panel">
+        <h2 class="panel-title">Result <span class="panel-sub">recreated</span></h2>
+        <div class="canvas-wrap">
+          <canvas id="result-canvas" hidden></canvas>
+          <div id="result-placeholder" class="placeholder">
+            <span>Upload a photo to<br />see Xiaojie reborn</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats" aria-label="Statistics">
+      <div class="stat"><span class="stat-label">Source resolution</span><span id="stat-source-res" class="stat-value">&mdash;</span></div>
+      <div class="stat"><span class="stat-label">Colours used</span><span id="stat-unique-colors" class="stat-value">&mdash;</span></div>
+      <div class="stat"><span class="stat-label">Processing time</span><span id="stat-time" class="stat-value">&mdash;</span></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Pixels crunched in a Web Worker. Colours matched in CIELAB. Serve it over http, not file://.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
