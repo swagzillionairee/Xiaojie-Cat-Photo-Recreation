@@ -8,13 +8,13 @@ For every pixel in the cat image it finds the nearest colour in the palette of y
 
 ## Before and after
 
-Drop your own `assets/xiaojie.jpg` in place, open the tool, and upload any photo. The three panels show the target cat on the left, your uploaded source in the middle, and the recreated cat on the right. A quick example flow:
+Open the tool and upload any photo. The three panels show the target cat on the left, your uploaded source in the middle, and the recreated cat on the right. A quick example flow:
 
 ```
 target: a photo of Xiaojie   +   source: a sunset over water   =   Xiaojie rendered in sunset oranges and purples
 ```
 
-(There is no committed sample image. See the note below about `assets/xiaojie.jpg`.)
+The repo ships with Xiaojie at `assets/xiaojie.jpg`, so it works out of the box.
 
 ## How the algorithm works
 
@@ -40,7 +40,7 @@ Then open the address it prints (for example `http://localhost:8000`) in your br
 
 ## The `assets/xiaojie.jpg` file
 
-The target cat image lives at `assets/xiaojie.jpg` and is not committed to the repo. Drop your own image at that path before running. If the file is missing, the tool tells you clearly both on screen and in the browser console, so you will know exactly what to add.
+The target cat image lives at `assets/xiaojie.jpg` and is included in the repo, so the tool runs out of the box. Swap in a different image at that same path to recreate something else. If the file is ever missing, the tool tells you clearly both on screen and in the browser console, so you will know exactly what to add.
 
 ## Controls
 
