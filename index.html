@@ -14,8 +14,9 @@
   </header>
 
   <main>
-    <!-- Status / error banner (missing cat image, worker errors, etc.) -->
-    <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+    <!-- Status / error banner (missing cat image, worker errors, etc.). Kept in the
+         DOM at all times so it stays a live region; collapses when empty via CSS. -->
+    <div id="status" class="status" role="status" aria-live="polite"></div>
 
     <!-- Controls -->
     <section class="controls" aria-label="Controls">
@@ -30,15 +31,15 @@
         <label><input type="radio" name="colorspace" value="rgb" /> RGB <span class="hint">(raw)</span></label>
       </fieldset>
 
-      <div class="control control--stretch">
-        <span class="control-title">Coming soon</span>
-        <label class="disabled" title="Stretch goal, not wired up in v1">
+      <fieldset class="control control--stretch">
+        <legend>Coming soon <span class="hint">(planned, not yet available)</span></legend>
+        <label class="disabled">
           <input type="checkbox" disabled /> Distribution match
         </label>
-        <label class="disabled" title="Stretch goal, not wired up in v1">
+        <label class="disabled">
           <input type="checkbox" disabled /> Dithering
         </label>
-      </div>
+      </fieldset>
 
       <div class="control control--action">
         <button id="download-btn" type="button" disabled>Download PNG</button>
@@ -66,7 +67,7 @@
         <h2 class="panel-title">Source <span class="panel-sub">your photo</span></h2>
         <div id="drop-zone" class="drop-zone canvas-wrap" role="button" tabindex="0"
              aria-label="Upload a source image by dropping a file here or pressing Enter to browse">
-          <canvas id="source-canvas" hidden></canvas>
+          <canvas id="source-canvas" aria-label="Your uploaded source image" hidden></canvas>
           <div id="source-placeholder" class="placeholder">
             <span class="placeholder-icon">+</span>
             <span>Drop a photo here<br />or click to browse</span>
@@ -80,7 +81,7 @@
       <article class="panel">
         <h2 class="panel-title">Result <span class="panel-sub">recreated</span></h2>
         <div class="canvas-wrap">
-          <canvas id="result-canvas" hidden></canvas>
+          <canvas id="result-canvas" aria-label="The recreated image, Xiaojie in your photo's colours" hidden></canvas>
           <div id="result-placeholder" class="placeholder">
             <span>Upload a photo to<br />see Xiaojie reborn</span>
           </div>

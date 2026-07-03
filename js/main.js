@@ -48,6 +48,7 @@ let worker = null;
 let targetReady = false;   // cat pixels handed to the worker
 let sourceReady = false;   // a source photo has been handed to the worker
 let busy = false;          // a run is in flight
+let pendingRun = false;    // a run was requested while busy; coalesce into one follow-up
 let runStart = 0;          // performance.now() at run start, for the timing stat
 let debounceTimer = null;
 
@@ -56,9 +57,11 @@ let debounceTimer = null;
 // ---------------------------------------------------------------------------
 function setStatus(message, kind) {
   // kind: 'info' | 'error' | '' (cleared)
+  // The element stays in the DOM (never `hidden`/display:none) so it remains in the
+  // accessibility tree and screen readers announce text as it is inserted. When the
+  // message is empty the `.status:empty` CSS rule collapses it to zero visual footprint.
   el.status.textContent = message || '';
   el.status.className = 'status' + (kind ? ' status--' + kind : '');
-  el.status.hidden = !message;
 }
 
 function showProgress(show) {
@@ -112,6 +115,12 @@ function initWorker() {
     showProgress(false);
     setStatus('Worker error: ' + (e.message || 'unknown') + '. The page must be served over http, not opened as a file://.', 'error');
     console.error('[xiaojie] worker error', e);
+    // Same stale-result cleanup and pending re-run as the reported-error path, so a
+    // worker crash mid-run does not leave a stale result on screen or strand a request.
+    el.downloadBtn.disabled = true;
+    el.resultCanvas.hidden = true;
+    el.resultPlaceholder.hidden = false;
+    maybeRunPending();
   };
 }
 
@@ -144,6 +153,7 @@ function onWorkerMessage(e) {
       busy = false;
       showProgress(false);
       setStatus('', '');
+      maybeRunPending();
       break;
     }
 
@@ -152,6 +162,12 @@ function onWorkerMessage(e) {
       showProgress(false);
       setStatus('Could not recreate Xiaojie: ' + msg.message, 'error');
       console.error('[xiaojie] worker reported error:', msg.message);
+      // The previous result no longer matches the current source, so do not leave
+      // it on screen with Download enabled as if it were the current output.
+      el.downloadBtn.disabled = true;
+      el.resultCanvas.hidden = true;
+      el.resultPlaceholder.hidden = false;
+      maybeRunPending();
       break;
 
     default:
@@ -178,6 +194,12 @@ function loadTarget() {
       );
       targetReady = true;
       console.info('[xiaojie] target loaded', imageData.width + 'x' + imageData.height);
+      // If a source was uploaded before the cat finished decoding, its run was
+      // refused for want of a target. Now that the target is here, run it.
+      if (sourceReady && !busy) {
+        setStatus('', '');
+        run();
+      }
     } catch (err) {
       setStatus('Loaded the cat image but could not read its pixels: ' + err.message, 'error');
       console.error('[xiaojie] target read failed', err);
@@ -248,7 +270,13 @@ function run() {
     return;
   }
   if (!sourceReady) return; // nothing uploaded yet, quietly wait
-  if (busy) return;         // let the in-flight run finish; a fresh run will follow via debounce
+  if (busy) {
+    // A run is already crunching. Remember that the controls/source changed so we
+    // re-run with the newest state the moment the in-flight run finishes, instead
+    // of silently dropping this request and leaving a stale result.
+    pendingRun = true;
+    return;
+  }
 
   busy = true;
   runStart = performance.now();
@@ -261,6 +289,15 @@ function run() {
 function scheduleRun() {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(run, CONTROL_DEBOUNCE_MS);
+}
+
+// After a run finishes (or errors), apply any request that arrived while it was busy.
+// Bounded to one follow-up per pending flag, so this cannot loop.
+function maybeRunPending() {
+  if (pendingRun) {
+    pendingRun = false;
+    run();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -328,12 +365,23 @@ function wireControls() {
 // Boot.
 // ---------------------------------------------------------------------------
 function init() {
+  el.paletteSizeValue.textContent = el.paletteSize.value;
   if (typeof Worker === 'undefined') {
     setStatus('Your browser does not support Web Workers, which this tool needs.', 'error');
     return;
   }
-  el.paletteSizeValue.textContent = el.paletteSize.value;
-  initWorker();
+  try {
+    // new Worker() throws synchronously under file:// (origin "null"), so catch it
+    // here and show the same "serve over http" guidance the worker.onerror path gives.
+    initWorker();
+  } catch (err) {
+    setStatus(
+      'Could not start the Web Worker. Serve this page over http (for example "npx serve" or "python -m http.server"), not by opening the file directly with a file:// URL.',
+      'error',
+    );
+    console.error('[xiaojie] worker construction failed', err);
+    return;
+  }
   wireControls();
   loadTarget();
 }
